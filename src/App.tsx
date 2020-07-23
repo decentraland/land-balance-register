@@ -27,8 +27,6 @@ const MINIME_TOKEN_ADDRESSES = {
   EstateMiniMeToken: '0x8568f23f343694650370fe5e254b55bfb704a6c7',
 }
 
-const provider = new ethers.providers.Web3Provider((window as any).ethereum)
-
 export default function App() {
   const [account, setAccount] = useState<string>()
   const [landLoading, setLandLoading] = useState(true)
@@ -49,43 +47,54 @@ export default function App() {
   const [landMinimeBalance, setLandMinimeBalance] = useState<BigNumber>()
   const [estateMinimeBalance, setEstateMinimeBalance] = useState<BigNumber>()
 
+  let provider: ethers.providers.Web3Provider | null
+
+  try {
+    provider = new ethers.providers.Web3Provider((window as any).ethereum)
+  } catch (e) {
+    console.error('You need a wallet to enterr')
+    provider = null
+  }
+
   useEffect(() => {
-    provider.send('eth_requestAccounts', []).then((accounts: string) => {
-      setAccount(accounts[0])
+    if (provider) {
+      provider.send('eth_requestAccounts', []).then((accounts: string) => {
+        setAccount(accounts[0])
 
-      setLandContract(
-        new Contract(
-          REGISTRY_ADDERSSES.LAND,
-          REGISTER_ABI,
-          provider.getSigner(0)
+        setLandContract(
+          new Contract(
+            REGISTRY_ADDERSSES.LAND,
+            REGISTER_ABI,
+            provider!.getSigner(0)
+          )
         )
-      )
 
-      setEstateContract(
-        new Contract(
-          REGISTRY_ADDERSSES.Estate,
-          REGISTER_ABI,
-          provider.getSigner(0)
+        setEstateContract(
+          new Contract(
+            REGISTRY_ADDERSSES.Estate,
+            REGISTER_ABI,
+            provider!.getSigner(0)
+          )
         )
-      )
 
-      setLandMinimeTokenContract(
-        new Contract(
-          MINIME_TOKEN_ADDRESSES.LANDMiniMeToken,
-          MINIME_ABI,
-          provider.getSigner(0)
+        setLandMinimeTokenContract(
+          new Contract(
+            MINIME_TOKEN_ADDRESSES.LANDMiniMeToken,
+            MINIME_ABI,
+            provider!.getSigner(0)
+          )
         )
-      )
 
-      setEstateMinimeTokenContract(
-        new Contract(
-          MINIME_TOKEN_ADDRESSES.EstateMiniMeToken,
-          MINIME_ABI,
-          provider.getSigner(0)
+        setEstateMinimeTokenContract(
+          new Contract(
+            MINIME_TOKEN_ADDRESSES.EstateMiniMeToken,
+            MINIME_ABI,
+            provider!.getSigner(0)
+          )
         )
-      )
-    })
-  }, [])
+      })
+    }
+  }, [provider])
 
   useEffect(() => {
     if (account && landContract && landMinimeTokenContract) {
@@ -194,72 +203,76 @@ export default function App() {
       <Header size="huge" textAlign="center">
         LAND Balance Register
       </Header>
-      <Container>
-        <Segment style={{ maxWidth: 600 }}>
-          <Loader size="mini" active={landLoading} />
-          <HeaderMenu>
-            <HeaderMenu.Left>
-              <Header>{'LAND Balance'}</Header>
-            </HeaderMenu.Left>
-            <HeaderMenu.Right>
-              <Radio
-                toggle
-                checked={isLandRegistered}
-                onChange={() => registerBalance('LAND')}
-                disabled={landLoading}
-                label={'Registered'}
-              ></Radio>
-            </HeaderMenu.Right>
-          </HeaderMenu>
-          <p>{`Balance: ${landBalance ? landBalance.toString() : 0} LAND`}</p>
-          <p style={{ fontWeight: 'bold', fontSize: 18 }}>
-            {`Voting Power: ${
-              isLandRegistered && landMinimeBalance
-                ? `${100 * landMinimeBalance!.toNumber()} MANA`
-                : 'Land balance not registered'
-            }`}
-          </p>
-        </Segment>
+      {provider ? (
+        <Container>
+          <Segment style={{ maxWidth: 600 }}>
+            <Loader size="mini" active={landLoading} />
+            <HeaderMenu>
+              <HeaderMenu.Left>
+                <Header>{'LAND Balance'}</Header>
+              </HeaderMenu.Left>
+              <HeaderMenu.Right>
+                <Radio
+                  toggle
+                  checked={isLandRegistered}
+                  onChange={() => registerBalance('LAND')}
+                  disabled={landLoading}
+                  label={'Registered'}
+                ></Radio>
+              </HeaderMenu.Right>
+            </HeaderMenu>
+            <p>{`Balance: ${landBalance ? landBalance.toString() : 0} LAND`}</p>
+            <p style={{ fontWeight: 'bold', fontSize: 18 }}>
+              {`Voting Power: ${
+                isLandRegistered && landMinimeBalance
+                  ? `${100 * landMinimeBalance!.toNumber()} MANA`
+                  : 'Land balance not registered'
+              }`}
+            </p>
+          </Segment>
 
-        <Segment style={{ maxWidth: 600 }}>
-          <Loader size="mini" active={estateLoading} />
-          <HeaderMenu>
-            <HeaderMenu.Left>
-              <Header>{'Estate LAND Balance'}</Header>
-            </HeaderMenu.Left>
-            <HeaderMenu.Right>
-              <Radio
-                toggle
-                checked={isEstateRegistered}
-                onChange={() => registerBalance('Estate')}
-                disabled={estateLoading}
-                label={'Registered'}
-              ></Radio>
-            </HeaderMenu.Right>
-          </HeaderMenu>
-          <p>{`balance: ${
-            estateBalance ? estateBalance.toString() : 0
-          } EST`}</p>
-          <p>{`Estate LAND balance: ${
-            estateLANDBalance ? estateLANDBalance.toString() : 0
-          } LAND`}</p>
-          <p style={{ fontWeight: 'bold', fontSize: 18 }}>
-            {`Voting Power: ${
-              isEstateRegistered && estateMinimeBalance
-                ? `${100 * estateMinimeBalance!.toNumber()} MANA`
-                : 'Estate balance not registered'
-            }`}
-          </p>
-        </Segment>
+          <Segment style={{ maxWidth: 600 }}>
+            <Loader size="mini" active={estateLoading} />
+            <HeaderMenu>
+              <HeaderMenu.Left>
+                <Header>{'Estate LAND Balance'}</Header>
+              </HeaderMenu.Left>
+              <HeaderMenu.Right>
+                <Radio
+                  toggle
+                  checked={isEstateRegistered}
+                  onChange={() => registerBalance('Estate')}
+                  disabled={estateLoading}
+                  label={'Registered'}
+                ></Radio>
+              </HeaderMenu.Right>
+            </HeaderMenu>
+            <p>{`balance: ${
+              estateBalance ? estateBalance.toString() : 0
+            } EST`}</p>
+            <p>{`Estate LAND balance: ${
+              estateLANDBalance ? estateLANDBalance.toString() : 0
+            } LAND`}</p>
+            <p style={{ fontWeight: 'bold', fontSize: 18 }}>
+              {`Voting Power: ${
+                isEstateRegistered && estateMinimeBalance
+                  ? `${100 * estateMinimeBalance!.toNumber()} MANA`
+                  : 'Estate balance not registered'
+              }`}
+            </p>
+          </Segment>
 
-        <Button
-          primary
-          href="https://mainnet.aragon.org/#/dcl.eth/0x0741ab50b28ed40ed81acc1867cf4d57004c29b6/"
-          target="blank"
-        >
-          {'Vote'}
-        </Button>
-      </Container>
+          <Button
+            primary
+            href="https://mainnet.aragon.org/#/dcl.eth/0x0741ab50b28ed40ed81acc1867cf4d57004c29b6/"
+            target="blank"
+          >
+            {'Vote'}
+          </Button>
+        </Container>
+      ) : (
+        <p style={{ textAlign: 'center' }}>{'Wallet not found'}</p>
+      )}
     </Page>
   )
 }

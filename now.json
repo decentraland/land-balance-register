@@ -1,12 +1,6 @@
 {
   "version": 2,
   "name": "land-balance-register",
-  "routes": [
-    {
-      "src": "/.*",
-      "dest": "/index.html"
-    }
-  ],
   "github": {
     "silent": true
   }
