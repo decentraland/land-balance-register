@@ -28,6 +28,7 @@ const MINIME_TOKEN_ADDRESSES = {
 }
 
 export default function App() {
+  const [provider, setProvider] = useState<ethers.providers.Web3Provider>()
   const [account, setAccount] = useState<string>()
   const [landLoading, setLandLoading] = useState(true)
   const [estateLoading, setEstateLoading] = useState(true)
@@ -47,17 +48,13 @@ export default function App() {
   const [landMinimeBalance, setLandMinimeBalance] = useState<BigNumber>()
   const [estateMinimeBalance, setEstateMinimeBalance] = useState<BigNumber>()
 
-  let provider: ethers.providers.Web3Provider | null
-
-  try {
-    provider = new ethers.providers.Web3Provider((window as any).ethereum)
-  } catch (e) {
-    console.error('You need a wallet to enterr')
-    provider = null
-  }
-
   useEffect(() => {
-    if (provider) {
+    try {
+      const provider = new ethers.providers.Web3Provider(
+        (window as any).ethereum
+      )
+      setProvider(provider)
+
       provider.send('eth_requestAccounts', []).then((accounts: string) => {
         setAccount(accounts[0])
 
@@ -93,8 +90,11 @@ export default function App() {
           )
         )
       })
+    } catch (e) {
+      console.error('You need a wallet to enterr')
+      return
     }
-  }, [provider])
+  }, [])
 
   useEffect(() => {
     if (account && landContract && landMinimeTokenContract) {
