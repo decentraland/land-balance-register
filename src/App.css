@@ -1,0 +1,17 @@
+.dcl.page {
+  margin-top: 40px;
+}
+
+.ui.container {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  align-content: center;
+  height: 100%;
+  margin-top: 50px;
+}
+
+.ui.segment {
+  width: 100%;
+  margin: 40px auto;
+}
